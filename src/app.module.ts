@@ -8,7 +8,7 @@ import { DatabaseModule } from './database/database.module';
 
 @Module({
   imports: [
-    ConfigModule.register({ folder: './config' }),
+    ConfigModule.register(),
     DatabaseModule,
     AuthModule,
     UsersModule,

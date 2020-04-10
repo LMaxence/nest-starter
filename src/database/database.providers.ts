@@ -14,7 +14,10 @@ export const databaseProviders = [
         password: configService.get('MYSQL_PASSWORD'),
         database: configService.get('MYSQL_DATABASE'),
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-        synchronize: true,
+        migrations: ['migrations/*.js'],
+        cli: {
+          migrationsDir: 'migrations',
+        },
       });
     },
     inject: [ConfigService],
