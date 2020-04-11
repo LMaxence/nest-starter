@@ -1,14 +1,17 @@
-import {MigrationInterface, QueryRunner} from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
+// eslint-disable-next-line @typescript-eslint/class-name-casing
 export class usersInitialMigration1586537785113 implements MigrationInterface {
-    name = 'usersInitialMigration1586537785113'
+  name = 'usersInitialMigration1586537785113';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query("CREATE TABLE `user` (`id` int NOT NULL AUTO_INCREMENT, `email` text NOT NULL, `password` text NOT NULL, `isActive` tinyint NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB", undefined);
-    }
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(
+      'CREATE TABLE `user` (`id` int NOT NULL AUTO_INCREMENT, `email` text NOT NULL, `password` text NOT NULL, `isActive` tinyint NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB',
+      undefined,
+    );
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query("DROP TABLE `user`", undefined);
-    }
-
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query('DROP TABLE `user`', undefined);
+  }
 }
