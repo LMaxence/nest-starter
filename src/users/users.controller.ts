@@ -4,62 +4,74 @@ import {
   Body,
   Param,
   Get,
-  UseInterceptors,
   Delete,
-  NotFoundException,
   Put,
+  UseFilters,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDTO } from './dto';
 import {
   USERS_ENDPOINT,
-  USER_NOT_FOUND_ERROR_MESSAGE,
   USER_DELETION_SUCCESS_MESSAGE,
+  USER_EMAIL_REQUEST_SENT_MESSAGE,
+  USER_EMAIL_UPDATE_SUCCESS_MESSAGE,
 } from './user.constants';
-import { UsersInterceptor } from './users.interceptor';
-import { UserSerializer } from './users.serializer';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import { NotFoundFilter } from 'src/helpers/filters/not-found.filter';
+import { User } from './user.entity';
+import { UpdateEmailDTO } from './dto/update-email.dto';
 
-@UseInterceptors(new UsersInterceptor(new UserSerializer()))
 @Controller(USERS_ENDPOINT)
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Post()
   async create(@Body() createUserDto: CreateUserDTO) {
-    return this.usersService.create(createUserDto);
+    const user = await this.usersService.create(createUserDto);
+    return user.toRaw();
   }
 
   @Get('')
   async findAll() {
-    return this.usersService.findAll();
+    return User.serializeCollection(await this.usersService.findAll());
   }
 
   @Get(':id')
+  @UseFilters(NotFoundFilter)
   async findOne(@Param('id') id: string) {
     const user = await this.usersService.findById(id);
-    if (!user) {
-      throw new NotFoundException(USER_NOT_FOUND_ERROR_MESSAGE);
-    }
-    return user;
+    return user.toRaw();
   }
 
   @Put(':id')
+  @UseFilters(NotFoundFilter)
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO) {
-    const user = await this.usersService.findById(id);
-    if (!user) {
-      throw new NotFoundException(USER_NOT_FOUND_ERROR_MESSAGE);
-    }
-    return this.usersService.update(user.id.toString(), updateUserDto);
+    const user = await this.usersService.update(id, updateUserDto);
+    return user.toRaw();
+  }
+
+  @Put(':id/email')
+  @UseFilters(NotFoundFilter)
+  async requestEmailUpdate(
+    @Param('id') id: string,
+    @Body() updateEmailDTO: UpdateEmailDTO,
+  ) {
+    this.usersService.requestEmailUpdate(id, updateEmailDTO.newEmail);
+    return USER_EMAIL_REQUEST_SENT_MESSAGE;
+  }
+
+  @Get(':id/email')
+  @UseFilters(NotFoundFilter)
+  async updateEmail(@Query('token') token: string) {
+    await this.usersService.updateEmail(token);
+    return USER_EMAIL_UPDATE_SUCCESS_MESSAGE;
   }
 
   @Delete(':id')
+  @UseFilters(NotFoundFilter)
   async delete(@Param('id') id: string) {
-    const user = await this.usersService.findById(id);
-    if (!user) {
-      throw new NotFoundException(USER_NOT_FOUND_ERROR_MESSAGE);
-    }
-    this.usersService.delete(id);
+    await this.usersService.delete(id);
     return USER_DELETION_SUCCESS_MESSAGE;
   }
 }

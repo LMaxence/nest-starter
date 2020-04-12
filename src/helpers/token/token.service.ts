@@ -1,0 +1,15 @@
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class TokenService {
+  generateToken() {
+    return (
+      Math.random()
+        .toString(36)
+        .substring(2, 15) +
+      Math.random()
+        .toString(36)
+        .substring(2, 15)
+    );
+  }
+}
