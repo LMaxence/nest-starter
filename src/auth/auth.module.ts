@@ -6,9 +6,11 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { HelpersModule } from 'src/helpers/helpers.module';
 
 @Module({
   imports: [
+    HelpersModule,
     UsersModule,
     PassportModule,
     JwtModule.register({

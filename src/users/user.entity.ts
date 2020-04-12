@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  BeforeInsert,
+  Index,
+} from 'typeorm';
 import { SerializedUser } from './interfaces/serialized-user.interface';
 
 @Entity()
@@ -6,21 +12,27 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('text')
+  @Index({ unique: true })
+  @Column('varchar')
   email: string;
 
-  @Column('text', {
+  @Column('varchar', {
     nullable: true,
   })
   emailCandidate: string;
 
-  @Column('text', {
+  @Column('varchar', {
     nullable: true,
   })
   emailProofToken: string;
 
-  @Column('text')
+  @Column('varchar')
   password: string;
+
+  @Column('varchar', {
+    nullable: true,
+  })
+  passwordResetToken: string;
 
   @Column('boolean', {
     default: false,
@@ -33,7 +45,13 @@ export class User {
   }
 
   toRaw(): SerializedUser {
-    const { password, emailCandidate, ...serializedUser } = this;
+    const {
+      password,
+      emailProofToken,
+      passwordResetToken,
+      emailCandidate,
+      ...serializedUser
+    } = this;
     return serializedUser;
   }
 

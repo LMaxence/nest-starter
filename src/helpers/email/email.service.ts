@@ -6,10 +6,13 @@ import {
   SendMailOptions,
   SentMessageInfo,
 } from 'nodemailer';
+import * as path from 'path';
+import * as ejs from 'ejs';
 
 @Injectable()
 export class EmailService {
   transporter: Transporter;
+  TEMPLATES_PATH = path.join(__dirname, '..', '..', '..', 'templates');
 
   constructor(private configService: ConfigService) {
     this.transporter = createTransport({
@@ -22,7 +25,15 @@ export class EmailService {
     });
   }
 
-  async sendMail(emailOptions: SendMailOptions): Promise<SentMessageInfo> {
+  async sendMail(
+    emailOptions: SendMailOptions,
+    templateName: string,
+    data: any,
+  ): Promise<SentMessageInfo> {
+    emailOptions.html = await ejs.renderFile(
+      path.join(this.TEMPLATES_PATH, templateName),
+      { data },
+    );
     return await this.transporter.sendMail(emailOptions);
   }
 }

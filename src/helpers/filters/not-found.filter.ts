@@ -6,7 +6,7 @@ export const ENTITY_NOT_FOUND_ERROR_MESSAGE = 'No entity found';
 
 @Catch(EntityNotFoundError)
 export class NotFoundFilter implements ExceptionFilter {
-  catch(exception: any, host: ArgumentsHost) {
+  catch(exception: EntityNotFoundError, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     response.status(404).json({

@@ -8,19 +8,29 @@ import {
   Put,
   UseFilters,
   Query,
+  BadRequestException,
+  ConflictException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDTO } from './dto';
+import {
+  CreateUserDTO,
+  UpdateUserDTO,
+  UpdateEmailDTO,
+  RequestPasswordUpdateDTO,
+  UpdatePasswordDTO,
+} from './dto';
 import {
   USERS_ENDPOINT,
   USER_DELETION_SUCCESS_MESSAGE,
   USER_EMAIL_REQUEST_SENT_MESSAGE,
   USER_EMAIL_UPDATE_SUCCESS_MESSAGE,
+  USER_PASSWORD_REQUEST_SENT_MESSAGE,
+  PASSWORD_DO_NOT_MATCH_MESSAGE,
+  USER_PASSWORD_UPDATE_SUCCESS_MESSAGE,
+  USER_ALREADY_EXISTS_MESSAGE,
 } from './user.constants';
-import { UpdateUserDTO } from './dto/update-user.dto';
 import { NotFoundFilter } from 'src/helpers/filters/not-found.filter';
 import { User } from './user.entity';
-import { UpdateEmailDTO } from './dto/update-email.dto';
 
 @Controller(USERS_ENDPOINT)
 export class UsersController {
@@ -28,6 +38,9 @@ export class UsersController {
 
   @Post()
   async create(@Body() createUserDto: CreateUserDTO) {
+    if (await this.usersService.findByEmail(createUserDto.email)) {
+      throw new ConflictException(USER_ALREADY_EXISTS_MESSAGE);
+    }
     const user = await this.usersService.create(createUserDto);
     return user.toRaw();
   }
@@ -40,7 +53,7 @@ export class UsersController {
   @Get(':id')
   @UseFilters(NotFoundFilter)
   async findOne(@Param('id') id: string) {
-    const user = await this.usersService.findById(id);
+    const user = await this.usersService.findByIdOrFail(id);
     return user.toRaw();
   }
 
@@ -51,21 +64,45 @@ export class UsersController {
     return user.toRaw();
   }
 
-  @Put(':id/email')
+  @Post(':id/email/reset')
   @UseFilters(NotFoundFilter)
   async requestEmailUpdate(
     @Param('id') id: string,
     @Body() updateEmailDTO: UpdateEmailDTO,
   ) {
-    this.usersService.requestEmailUpdate(id, updateEmailDTO.newEmail);
+    if (await this.usersService.findByEmail(updateEmailDTO.newEmail)) {
+      throw new ConflictException(USER_ALREADY_EXISTS_MESSAGE);
+    }
+    await this.usersService.requestEmailUpdate(id, updateEmailDTO.newEmail);
     return USER_EMAIL_REQUEST_SENT_MESSAGE;
   }
 
-  @Get(':id/email')
+  @Get('/email/confirm')
   @UseFilters(NotFoundFilter)
   async updateEmail(@Query('token') token: string) {
-    await this.usersService.updateEmail(token);
+    await this.usersService.confirmEmail(token);
     return USER_EMAIL_UPDATE_SUCCESS_MESSAGE;
+  }
+
+  @Post('/password/reset')
+  @UseFilters(NotFoundFilter)
+  async requestPasswordUpdate(
+    @Body() requestPasswordUpdateDTO: RequestPasswordUpdateDTO,
+  ) {
+    const { email } = requestPasswordUpdateDTO;
+    await this.usersService.requestPasswordUpdate(email);
+    return USER_PASSWORD_REQUEST_SENT_MESSAGE;
+  }
+
+  @Put('/password/reset')
+  @UseFilters(NotFoundFilter)
+  async updatePassword(@Body() requestPasswordUpdateDTO: UpdatePasswordDTO) {
+    const { token, password, passwordConfirmation } = requestPasswordUpdateDTO;
+    if (password !== passwordConfirmation) {
+      throw new BadRequestException(PASSWORD_DO_NOT_MATCH_MESSAGE);
+    }
+    await this.usersService.updatePassword(token, password);
+    return USER_PASSWORD_UPDATE_SUCCESS_MESSAGE;
   }
 
   @Delete(':id')
