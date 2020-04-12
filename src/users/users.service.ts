@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, ImATeapotException } from '@nestjs/common';
 import { Repository, DeleteResult } from 'typeorm';
 import { User } from './user.entity';
 import {
@@ -32,7 +32,12 @@ export class UsersService {
   async create(userObject: CreateUserDTO): Promise<User> {
     userObject.password = await this.cryptoService.hash(userObject.password);
     return await this.usersRepository.save(
-      this.usersRepository.create(userObject),
+      this.usersRepository.create({
+        ...userObject,
+        emailCandidate: userObject.email,
+        emailProofToken: this.tokenService.generateToken(),
+        emailProofTokenExpiresAt: new Date(Date.now() + this.tokenService.ttl),
+      }),
     );
   }
 
@@ -78,6 +83,9 @@ export class UsersService {
     const user = await this.findByIdOrFail(id);
     user.emailCandidate = emailCandidate;
     user.emailProofToken = this.tokenService.generateToken();
+    user.emailProofTokenExpiresAt = new Date(
+      Date.now() + this.tokenService.ttl,
+    );
     const url = `${this.configService.get(
       'BASE_URL',
     )}/${USERS_ENDPOINT}/email/confirm?token=${user.emailProofToken}`;
@@ -95,10 +103,13 @@ export class UsersService {
   async requestPasswordUpdate(email: string) {
     const user = await this.findByEmailOrFail(email);
     user.passwordResetToken = this.tokenService.generateToken();
+    user.passwordResetTokenExpiresAt = new Date(
+      Date.now() + this.tokenService.ttl,
+    );
     const url = `${this.configService.get(
       'BASE_URL',
     )}/${USERS_ENDPOINT}/password/reset?token=${user.passwordResetToken}`;
-    this.usersRepository.save(user);
+    await this.usersRepository.save(user);
     this.emailService.sendMail(
       {
         to: user.email,
@@ -113,19 +124,35 @@ export class UsersService {
     const user = await this.usersRepository.findOneOrFail({
       where: { emailProofToken: token },
     });
+
+    if (user.emailProofTokenExpiresAt.getTime() < Date.now()) {
+      await this.requestEmailUpdate(user.id.toString(), user.email);
+      throw new ImATeapotException(
+        'Your token is expired, we sent you a new one',
+      );
+    }
     user.email = user.emailCandidate;
+    user.isActive = true;
     user.emailProofToken = null;
+    user.emailProofTokenExpiresAt = null;
     user.emailCandidate = null;
-    this.usersRepository.save(user);
+    await this.usersRepository.save(user);
   }
 
   async updatePassword(token: string, password: string) {
     const user = await this.usersRepository.findOneOrFail({
       where: { passwordResetToken: token },
     });
+    if (user.passwordResetTokenExpiresAt.getTime() < Date.now()) {
+      await this.requestPasswordUpdate(user.email);
+      throw new ImATeapotException(
+        'Your token is expired, we sent you a new one',
+      );
+    }
     user.password = await this.cryptoService.hash(password);
     user.passwordResetToken = null;
-    this.usersRepository.save(user);
+    user.passwordResetTokenExpiresAt = null;
+    await this.usersRepository.save(user);
   }
 
   /**

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class TokenService {
+  ttl = 3600 * 1000;
   generateToken() {
     return (
       Math.random()

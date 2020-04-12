@@ -26,6 +26,11 @@ export class User {
   })
   emailProofToken: string;
 
+  @Column('datetime', {
+    nullable: true,
+  })
+  emailProofTokenExpiresAt: Date;
+
   @Column('varchar')
   password: string;
 
@@ -33,6 +38,11 @@ export class User {
     nullable: true,
   })
   passwordResetToken: string;
+
+  @Column('datetime', {
+    nullable: true,
+  })
+  passwordResetTokenExpiresAt: Date;
 
   @Column('boolean', {
     default: false,
@@ -48,7 +58,9 @@ export class User {
     const {
       password,
       emailProofToken,
+      emailProofTokenExpiresAt,
       passwordResetToken,
+      passwordResetTokenExpiresAt,
       emailCandidate,
       ...serializedUser
     } = this;
