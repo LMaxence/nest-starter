@@ -10,6 +10,8 @@ import {
   Query,
   BadRequestException,
   ConflictException,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -31,6 +33,9 @@ import {
 } from './user.constants';
 import { NotFoundFilter } from 'src/helpers/filters/not-found.filter';
 import { User } from './user.entity';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { IsAuthenticatedUserGuard } from './guards/is-authenticated-user.guard';
+import { AuthenticatedRequest } from 'src/auth/interfaces';
 
 @Controller(USERS_ENDPOINT)
 export class UsersController {
@@ -46,18 +51,29 @@ export class UsersController {
   }
 
   @Get('')
+  @UseGuards(JwtAuthGuard)
   async findAll() {
     return User.serializeCollection(await this.usersService.findAll());
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   @UseFilters(NotFoundFilter)
   async findOne(@Param('id') id: string) {
     const user = await this.usersService.findByIdOrFail(id);
     return user.toRaw();
   }
 
+  @Get('me/profile')
+  @UseGuards(JwtAuthGuard)
+  @UseFilters(NotFoundFilter)
+  async getProfile(@Request() req: AuthenticatedRequest) {
+    return req.user.toRaw();
+  }
+
   @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  @UseGuards(IsAuthenticatedUserGuard)
   @UseFilters(NotFoundFilter)
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO) {
     const user = await this.usersService.update(id, updateUserDto);
@@ -65,6 +81,8 @@ export class UsersController {
   }
 
   @Post(':id/email/reset')
+  @UseGuards(JwtAuthGuard)
+  @UseGuards(IsAuthenticatedUserGuard)
   @UseFilters(NotFoundFilter)
   async requestEmailUpdate(
     @Param('id') id: string,
@@ -106,6 +124,8 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @UseGuards(IsAuthenticatedUserGuard)
   @UseFilters(NotFoundFilter)
   async delete(@Param('id') id: string) {
     await this.usersService.delete(id);
