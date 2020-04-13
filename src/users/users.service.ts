@@ -58,11 +58,11 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { email } });
   }
 
-  async findByIdOrFail(id: string): Promise<User | undefined> {
+  async findByIdOrFail(id: string): Promise<User> {
     return await this.usersRepository.findOneOrFail({ where: { id } });
   }
 
-  async findByEmailOrFail(email: string): Promise<User | undefined> {
+  async findByEmailOrFail(email: string): Promise<User> {
     return this.usersRepository.findOneOrFail({ where: { email } });
   }
 
@@ -71,15 +71,12 @@ export class UsersService {
    *
    */
 
-  async update(
-    id: string,
-    updateObject: UpdateUserDTO,
-  ): Promise<User | undefined> {
+  async update(id: string, updateObject: UpdateUserDTO): Promise<User> {
     await this.usersRepository.update(id, updateObject);
     return await this.findByIdOrFail(id);
   }
 
-  async requestEmailUpdate(id: string, emailCandidate: string) {
+  async requestEmailUpdate(id: string, emailCandidate: string): Promise<void> {
     const user = await this.findByIdOrFail(id);
     user.emailCandidate = emailCandidate;
     user.emailProofToken = this.tokenService.generateToken();

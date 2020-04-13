@@ -7,7 +7,7 @@ import { HelpersModule } from './helpers/helpers.module';
 
 @Module({
   imports: [
-    ConfigModule.register(),
+    ConfigModule.forRoot(),
     DatabaseModule,
     AuthModule,
     UsersModule,

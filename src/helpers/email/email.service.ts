@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from 'src/config/config.service';
 import {
   createTransport,
@@ -10,17 +10,19 @@ import * as path from 'path';
 import * as ejs from 'ejs';
 
 @Injectable()
-export class EmailService {
+export class EmailService implements OnModuleInit {
   transporter: Transporter;
   TEMPLATES_PATH = path.join(__dirname, '..', '..', '..', 'templates');
 
-  constructor(private configService: ConfigService) {
+  constructor(private configService: ConfigService) {}
+
+  onModuleInit() {
     this.transporter = createTransport({
-      host: configService.get('NODEMAILER_HOST'),
-      port: parseInt(configService.get('NODEMAILER_PORT')),
+      host: this.configService.get('NODEMAILER_HOST'),
+      port: parseInt(this.configService.get('NODEMAILER_PORT')),
       auth: {
-        user: configService.get('NODEMAILER_USER'),
-        pass: configService.get('NODEMAILER_PASS'),
+        user: this.configService.get('NODEMAILER_USER'),
+        pass: this.configService.get('NODEMAILER_PASS'),
       },
     });
   }

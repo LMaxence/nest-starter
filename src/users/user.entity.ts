@@ -19,17 +19,17 @@ export class User {
   @Column('varchar', {
     nullable: true,
   })
-  emailCandidate: string;
+  emailCandidate?: string;
 
   @Column('varchar', {
     nullable: true,
   })
-  emailProofToken: string;
+  emailProofToken?: string;
 
   @Column('datetime', {
     nullable: true,
   })
-  emailProofTokenExpiresAt: Date;
+  emailProofTokenExpiresAt?: Date;
 
   @Column('varchar')
   password: string;
@@ -37,12 +37,12 @@ export class User {
   @Column('varchar', {
     nullable: true,
   })
-  passwordResetToken: string;
+  passwordResetToken?: string;
 
   @Column('datetime', {
     nullable: true,
   })
-  passwordResetTokenExpiresAt: Date;
+  passwordResetTokenExpiresAt?: Date;
 
   @Column('boolean', {
     default: false,

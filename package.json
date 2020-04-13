@@ -85,6 +85,10 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "moduleDirectories": ["node_modules", "src"],
+    "moduleNameMapper": {
+      "src/(.*)": "<rootDir>/$1"
+    },
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }

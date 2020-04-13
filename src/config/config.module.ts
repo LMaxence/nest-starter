@@ -8,7 +8,7 @@ export interface ConfigModuleOptions {
 @Global()
 @Module({})
 export class ConfigModule {
-  static register(): DynamicModule {
+  static forRoot(): DynamicModule {
     return {
       module: ConfigModule,
       providers: [ConfigService],
