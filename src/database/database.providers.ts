@@ -2,6 +2,18 @@ import { createConnection } from 'typeorm';
 import { DATABASE_CONNECTION } from './constants';
 import { ConfigService } from 'src/config/config.service';
 
+let connectionName: string;
+switch (process.env.NODE_ENV) {
+  case 'development':
+    connectionName = 'default';
+    break;
+  case 'test':
+    connectionName = 'test';
+    break;
+  default:
+    connectionName = 'default';
+}
+
 export const databaseProviders = [
   {
     provide: DATABASE_CONNECTION,
@@ -9,15 +21,12 @@ export const databaseProviders = [
       return await createConnection({
         type: 'mysql',
         host: 'localhost',
-        port: 3306,
+        port: parseInt(configService.get('MYSQL_PORT') || '3306'),
+        name: connectionName,
         username: configService.get('APP_NAME'),
         password: configService.get('MYSQL_PASSWORD'),
         database: configService.get('MYSQL_DATABASE'),
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-        migrations: ['migrations/*.js'],
-        cli: {
-          migrationsDir: 'migrations',
-        },
       });
     },
     inject: [ConfigService],

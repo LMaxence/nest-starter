@@ -9,9 +9,9 @@ import { HelpersModule } from './helpers/helpers.module';
   imports: [
     ConfigModule.forRoot(),
     DatabaseModule,
+    HelpersModule,
     AuthModule,
     UsersModule,
-    HelpersModule,
   ],
 })
 export class AppModule {}
