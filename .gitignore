@@ -36,3 +36,4 @@ lerna-debug.log*
 # Environment
 config/*
 !config/example.env
+!config/test.env
