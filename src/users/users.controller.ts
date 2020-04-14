@@ -85,7 +85,7 @@ export class UsersController {
   @HttpCode(200)
   async requestEmailConfirmation(
     @Request() request,
-    @Body() updateEmailDTO: UpdateEmailDTO,
+    @Body() updateEmailDTO: UpdateEmailDTO
   ) {
     const { newEmail } = updateEmailDTO;
     if (!(await this.usersService.getEmailAvailability(newEmail))) {
@@ -106,7 +106,7 @@ export class UsersController {
   @UseFilters(NotFoundFilter)
   @HttpCode(200)
   async requestPasswordUpdate(
-    @Body() requestPasswordUpdateDTO: RequestPasswordUpdateDTO,
+    @Body() requestPasswordUpdateDTO: RequestPasswordUpdateDTO
   ) {
     const { email } = requestPasswordUpdateDTO;
     await this.usersService.requestPasswordUpdate(email);

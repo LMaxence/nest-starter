@@ -18,10 +18,8 @@ class MockRepository {
   async findOne({ where }) {
     return Promise.resolve(
       usersFixtures.find(user => {
-        return where.id
-          ? user.id.toString() === where.id
-          : user.email === where.email;
-      }),
+        return where.id ? user.id.toString() === where.id : user.email === where.email;
+      })
     );
   }
 
@@ -43,6 +41,7 @@ const tokenServiceMock = {
 };
 
 const emailServiceMock = {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   sendMail: () => {},
 };
 
@@ -99,9 +98,7 @@ describe('UsersService', () => {
     it('finds users by email', async () => {
       const emailAddress = usersFixtures[0].email;
       const user = await usersService.findByEmail(emailAddress);
-      expect(user.id).toBe(
-        usersFixtures.find(user => user.email === emailAddress).id,
-      );
+      expect(user.id).toBe(usersFixtures.find(user => user.email === emailAddress).id);
     });
 
     it('returns undefined when user is not found', async () => {
@@ -196,11 +193,9 @@ describe('UsersService', () => {
         jest.spyOn(usersRepository, 'findOneOrFail').mockImplementation(() => {
           return Promise.resolve(user);
         });
-        const saveSpy = jest
-          .spyOn(usersRepository, 'save')
-          .mockImplementation(() => {
-            return Promise.resolve(user);
-          });
+        const saveSpy = jest.spyOn(usersRepository, 'save').mockImplementation(() => {
+          return Promise.resolve(user);
+        });
         expect(async () => {
           await usersService.confirmEmail(token);
         }).rejects;
@@ -246,11 +241,9 @@ describe('UsersService', () => {
         jest.spyOn(usersRepository, 'findOneOrFail').mockImplementation(() => {
           return Promise.resolve(user);
         });
-        const saveSpy = jest
-          .spyOn(usersRepository, 'save')
-          .mockImplementation(() => {
-            return Promise.resolve(user);
-          });
+        const saveSpy = jest.spyOn(usersRepository, 'save').mockImplementation(() => {
+          return Promise.resolve(user);
+        });
         expect(async () => {
           await usersService.updatePassword(token, '');
         }).rejects;

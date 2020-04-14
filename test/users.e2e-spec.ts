@@ -16,17 +16,14 @@ const emailServiceMock = {
   sendMail: async (
     options: Mail.Options,
     templateName: string,
-    data: any,
+    data: any
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
   ) => {},
 };
 
 const createdUserIds: number[] = [];
 
-const login = async (
-  server: HttpServer,
-  email: string,
-  password: string,
-): Promise<string | undefined> => {
+const login = async (server: HttpServer, email: string, password: string): Promise<string | undefined> => {
   return await request(server)
     .post('/auth/login')
     .send({
@@ -38,21 +35,14 @@ const login = async (
     });
 };
 
-const addUser = async (
-  repository: Repository<User>,
-  data: DeepPartial<User>,
-): Promise<void> => {
+const addUser = async (repository: Repository<User>, data: DeepPartial<User>): Promise<void> => {
   const newUser = await repository.save(repository.create(data));
   createdUserIds.push(newUser.id);
   newUser.isActive = true;
   await repository.save(newUser);
 };
 
-const buildRegisterAndLogin = (
-  server: HttpServer,
-  usersRepository: Repository<User>,
-  cryptoService: CryptoService,
-) => async () => {
+const buildRegisterAndLogin = (server: HttpServer, usersRepository: Repository<User>, cryptoService: CryptoService) => async () => {
   const userDetails = {
     email: faker.fake('{{internet.email}}'),
     password: faker.fake('{{internet.password}}'),
@@ -91,11 +81,7 @@ describe('UsersController (e2e)', () => {
     usersRepository = app.get<Repository<User>>(USERS_REPOSITORY);
     cryptoService = app.get<CryptoService>(CryptoService);
     emailService = app.get<EmailService>(EmailService);
-    registerAndLogin = buildRegisterAndLogin(
-      server,
-      usersRepository,
-      cryptoService,
-    );
+    registerAndLogin = buildRegisterAndLogin(server, usersRepository, cryptoService);
   });
 
   afterAll(async () => {
@@ -371,9 +357,7 @@ describe('UsersController (e2e)', () => {
         .expect(200)
         .then(async () => {
           const updatedUser = await usersRepository.findOne(user.id);
-          expect(
-            await cryptoService.compare(newPassword, updatedUser.password),
-          ).toBeTruthy();
+          expect(await cryptoService.compare(newPassword, updatedUser.password)).toBeTruthy();
         });
     });
   });
@@ -397,9 +381,7 @@ describe('UsersController (e2e)', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(200)
         .then(async () => {
-          expect(
-            await usersRepository.findOne(user.id.toString()),
-          ).toBeUndefined();
+          expect(await usersRepository.findOne(user.id.toString())).toBeUndefined();
         });
     });
   });

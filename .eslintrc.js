@@ -29,7 +29,8 @@ module.exports = {
         ignoreRestSiblings: true,
       },
     ],
-    camelcase: 'off',
+    camelcase: 2,
     '@typescript-eslint/camelcase': ['error', { properties: 'never' }],
+    eqeqeq: ['error', 'always'],
   },
 };
