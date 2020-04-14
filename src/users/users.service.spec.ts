@@ -111,7 +111,7 @@ describe('UsersService', () => {
     });
   });
 
-  describe('requestEmailUpdate', () => {
+  describe('requestEmailConfirmation', () => {
     const user = usersFixtures[0];
     const id = user.id.toString();
     const newEmail = 'new_email@test.com';
@@ -127,7 +127,7 @@ describe('UsersService', () => {
         return Promise.resolve(user);
       });
       const mailSentSpy = jest.spyOn(emailService, 'sendMail');
-      await usersService.requestEmailUpdate(id, newEmail);
+      await usersService.requestEmailConfirmation(id, newEmail);
       expect(mailSentSpy).toHaveBeenCalled();
       expect(emailCandidate).toBe(newEmail);
       expect(emailProofToken).toBe(tokenServiceMock.generateToken());
@@ -136,7 +136,7 @@ describe('UsersService', () => {
 
     it('throws when user is not found', () => {
       expect(async () => {
-        await usersService.requestEmailUpdate('fakeId', newEmail);
+        await usersService.requestEmailConfirmation('fakeId', newEmail);
       }).rejects;
     });
   });

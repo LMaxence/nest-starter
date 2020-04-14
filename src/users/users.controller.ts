@@ -12,6 +12,7 @@ import {
   ConflictException,
   UseGuards,
   Request,
+  HttpCode,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -41,9 +42,9 @@ import { AuthenticatedRequest } from 'src/auth/interfaces';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @Post()
+  @Post('')
   async create(@Body() createUserDto: CreateUserDTO) {
-    if (await this.usersService.findByEmail(createUserDto.email)) {
+    if (!(await this.usersService.getEmailAvailability(createUserDto.email))) {
       throw new ConflictException(USER_ALREADY_EXISTS_MESSAGE);
     }
     const user = await this.usersService.create(createUserDto);
@@ -72,7 +73,6 @@ export class UsersController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard)
   @UseGuards(IsAuthenticatedUserGuard)
   @UseFilters(NotFoundFilter)
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO) {
@@ -80,18 +80,18 @@ export class UsersController {
     return user.toRaw();
   }
 
-  @Post(':id/email/reset')
+  @Post('/email/reset')
   @UseGuards(JwtAuthGuard)
-  @UseGuards(IsAuthenticatedUserGuard)
-  @UseFilters(NotFoundFilter)
-  async requestEmailUpdate(
-    @Param('id') id: string,
+  @HttpCode(200)
+  async requestEmailConfirmation(
+    @Request() request,
     @Body() updateEmailDTO: UpdateEmailDTO,
   ) {
-    if (await this.usersService.findByEmail(updateEmailDTO.newEmail)) {
+    const { newEmail } = updateEmailDTO;
+    if (!(await this.usersService.getEmailAvailability(newEmail))) {
       throw new ConflictException(USER_ALREADY_EXISTS_MESSAGE);
     }
-    await this.usersService.requestEmailUpdate(id, updateEmailDTO.newEmail);
+    await this.usersService.requestEmailConfirmation(request.user.id, newEmail);
     return USER_EMAIL_REQUEST_SENT_MESSAGE;
   }
 
@@ -104,6 +104,7 @@ export class UsersController {
 
   @Post('/password/reset')
   @UseFilters(NotFoundFilter)
+  @HttpCode(200)
   async requestPasswordUpdate(
     @Body() requestPasswordUpdateDTO: RequestPasswordUpdateDTO,
   ) {
@@ -124,9 +125,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
   @UseGuards(IsAuthenticatedUserGuard)
-  @UseFilters(NotFoundFilter)
   async delete(@Param('id') id: string) {
     await this.usersService.delete(id);
     return USER_DELETION_SUCCESS_MESSAGE;

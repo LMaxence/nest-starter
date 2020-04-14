@@ -4,7 +4,7 @@ import { AppModule } from '../src/app.module';
 import { Connection } from 'typeorm';
 import { DATABASE_CONNECTION } from 'src/database/constants';
 
-describe('AppController (e2e)', () => {
+describe('App build (e2e)', () => {
   let app: INestApplication;
 
   afterAll(async () => {

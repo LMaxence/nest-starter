@@ -18,6 +18,8 @@ describe('AuthController (e2e) /auth', () => {
   let email: string;
   let password: string;
 
+  let user: User;
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -31,17 +33,17 @@ describe('AuthController (e2e) /auth', () => {
     usersRepository = app.get<Repository<User>>(USERS_REPOSITORY);
     cryptoService = app.get<CryptoService>('CryptoService');
     const hashedPassword = await cryptoService.hash(password);
-    const user = usersRepository.create({
+    user = usersRepository.create({
       email: email,
       isActive: true,
       password: hashedPassword,
     });
-    await usersRepository.save(user);
+    user = await usersRepository.save(user);
     await app.init();
   });
 
   afterAll(async () => {
-    await usersRepository.clear();
+    await usersRepository.delete(user.id);
     const connection = app.get<Connection>(DATABASE_CONNECTION);
     connection.close();
   });
@@ -51,6 +53,7 @@ describe('AuthController (e2e) /auth', () => {
       return await request(server)
         .post('/auth/login')
         .send({ email, password })
+        .expect(200)
         .then(response => {
           const { access_token: accessToken } = response.body;
           expect(accessToken).toBeDefined();

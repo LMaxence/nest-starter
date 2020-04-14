@@ -31,14 +31,13 @@ export class UsersService {
    */
   async create(userObject: CreateUserDTO): Promise<User> {
     userObject.password = await this.cryptoService.hash(userObject.password);
-    return await this.usersRepository.save(
+    const user = await this.usersRepository.save(
       this.usersRepository.create({
         ...userObject,
-        emailCandidate: userObject.email,
-        emailProofToken: this.tokenService.generateToken(),
-        emailProofTokenExpiresAt: new Date(Date.now() + this.tokenService.ttl),
       }),
     );
+    await this.requestEmailConfirmation(user.id.toString(), user.email);
+    return user;
   }
 
   /**
@@ -66,6 +65,13 @@ export class UsersService {
     return this.usersRepository.findOneOrFail({ where: { email } });
   }
 
+  async getEmailAvailability(email: string): Promise<boolean> {
+    if (await this.findByEmail(email)) {
+      return false;
+    }
+    return true;
+  }
+
   /**
    * Update methods
    *
@@ -76,7 +82,10 @@ export class UsersService {
     return await this.findByIdOrFail(id);
   }
 
-  async requestEmailUpdate(id: string, emailCandidate: string): Promise<void> {
+  async requestEmailConfirmation(
+    id: string,
+    emailCandidate: string,
+  ): Promise<void> {
     const user = await this.findByIdOrFail(id);
     user.emailCandidate = emailCandidate;
     user.emailProofToken = this.tokenService.generateToken();
@@ -86,10 +95,10 @@ export class UsersService {
     const url = `${this.configService.get(
       'BASE_URL',
     )}/${USERS_ENDPOINT}/email/confirm?token=${user.emailProofToken}`;
-    this.usersRepository.save(user);
+    await this.usersRepository.save(user);
     this.emailService.sendMail(
       {
-        to: user.email,
+        to: user.emailCandidate,
         subject: USER_EMAIL_CONFIRM_EMAIL_SUBJECT,
       },
       'confirm-email.ejs',
@@ -123,7 +132,7 @@ export class UsersService {
     });
 
     if (user.emailProofTokenExpiresAt.getTime() < Date.now()) {
-      await this.requestEmailUpdate(user.id.toString(), user.email);
+      await this.requestEmailConfirmation(user.id.toString(), user.email);
       throw new ImATeapotException(
         'Your token is expired, we sent you a new one',
       );
