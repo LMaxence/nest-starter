@@ -6,12 +6,6 @@ import { DatabaseModule } from './database/database.module';
 import { HelpersModule } from './helpers/helpers.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot(),
-    DatabaseModule,
-    HelpersModule,
-    AuthModule,
-    UsersModule,
-  ],
+  imports: [ConfigModule.forRoot(), DatabaseModule, HelpersModule, AuthModule, UsersModule],
 })
 export class AppModule {}

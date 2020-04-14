@@ -13,7 +13,7 @@ export const usersFixtures: User[] = [
     password: 'test',
     isActive: true,
   },
-].map(fixture => {
+].map((fixture) => {
   const { id, email, password, isActive } = fixture;
   const userFixture = new User();
   userFixture.id = id;

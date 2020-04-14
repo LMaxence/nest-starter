@@ -5,11 +5,7 @@ import { CryptoService } from 'src/helpers/crypto/crypto.service';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private cryptoService: CryptoService,
-    private usersService: UsersService,
-    private jwtService: JwtService
-  ) {}
+  constructor(private cryptoService: CryptoService, private usersService: UsersService, private jwtService: JwtService) {}
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findByEmailOrFail(email);

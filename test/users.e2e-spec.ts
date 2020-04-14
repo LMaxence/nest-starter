@@ -30,7 +30,7 @@ const login = async (server: HttpServer, email: string, password: string): Promi
       email: email,
       password: password,
     })
-    .then(response => {
+    .then((response) => {
       return response.body['access_token'];
     });
 };
@@ -102,7 +102,7 @@ describe('UsersController (e2e)', () => {
           password: password,
         })
         .expect(201)
-        .then(response => {
+        .then((response) => {
           const { id } = response.body;
           createdUserIds.push(id);
           expect(mailSpy).toHaveBeenCalled();
@@ -129,9 +129,7 @@ describe('UsersController (e2e)', () => {
 
   describe('GET /users', () => {
     it('returns a 401 when user is not authenticated', () => {
-      return request(server)
-        .get('/users')
-        .expect(401);
+      return request(server).get('/users').expect(401);
     });
 
     it('returns a list of users when user is authenticated', async () => {
@@ -140,7 +138,7 @@ describe('UsersController (e2e)', () => {
         .get('/users')
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(200)
-        .then(response => {
+        .then((response) => {
           expect(response.body).toBeInstanceOf(Array);
         });
     });
@@ -148,9 +146,7 @@ describe('UsersController (e2e)', () => {
 
   describe('GET /users/:id', () => {
     it('returns a 401 when user is not authenticated', async () => {
-      return await request(server)
-        .get('/users/1')
-        .expect(401);
+      return await request(server).get('/users/1').expect(401);
     });
 
     it('returns the requested user when user is authenticated', async () => {
@@ -159,7 +155,7 @@ describe('UsersController (e2e)', () => {
         .get(`/users/${user.id}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(200)
-        .then(response => {
+        .then((response) => {
           const returnedUser = response.body;
           expect(returnedUser.id).toBe(user.id);
         });
@@ -167,18 +163,13 @@ describe('UsersController (e2e)', () => {
 
     it('returns 404 when the requested user is not found', async () => {
       const { accessToken } = await registerAndLogin();
-      return await request(server)
-        .get(`/users/fakeId`)
-        .set('Authorization', `Bearer ${accessToken}`)
-        .expect(404);
+      return await request(server).get(`/users/fakeId`).set('Authorization', `Bearer ${accessToken}`).expect(404);
     });
   });
 
   describe('GET /users/me/profile', () => {
     it('returns a 401 when user is not authenticated', async () => {
-      return await request(server)
-        .get('/users/me/profile')
-        .expect(401);
+      return await request(server).get('/users/me/profile').expect(401);
     });
 
     it('returns me when user is authenticated', async () => {
@@ -187,7 +178,7 @@ describe('UsersController (e2e)', () => {
         .get('/users/me/profile')
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(200)
-        .then(response => {
+        .then((response) => {
           const returnedUser = response.body;
           expect(returnedUser.id).toBe(user.id);
         });
@@ -196,9 +187,7 @@ describe('UsersController (e2e)', () => {
 
   describe('PUT /users/:id', () => {
     it('returns a 401 when user is not authenticated', async () => {
-      return await request(server)
-        .put('/users/fakeId')
-        .expect(401);
+      return await request(server).put('/users/fakeId').expect(401);
     });
 
     it('returns a 401 when user attemps to update another user', async () => {
@@ -230,9 +219,7 @@ describe('UsersController (e2e)', () => {
 
   describe('POST /users/email/reset', () => {
     it('returns a 401 when user is not authenticated', async () => {
-      return await request(server)
-        .post('/users/email/reset')
-        .expect(401);
+      return await request(server).post('/users/email/reset').expect(401);
     });
 
     it('return a 409 if the email is already taken', async () => {
@@ -295,10 +282,7 @@ describe('UsersController (e2e)', () => {
     it('returns 404 when provided token is invalid', async () => {
       const { accessToken } = await registerAndLogin();
 
-      await request(server)
-        .post('/users/email/reset')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({ newEmail: 'fake@fake.test' });
+      await request(server).post('/users/email/reset').set('Authorization', `Bearer ${accessToken}`).send({ newEmail: 'fake@fake.test' });
 
       return await request(server)
         .get('/users/email/confirm')
@@ -310,10 +294,7 @@ describe('UsersController (e2e)', () => {
 
   describe('POST /users/password/reset', () => {
     it('returns a 404 when provided email is not found', async () => {
-      return await request(server)
-        .post('/users/password/reset')
-        .send({ email: 'fake@fake.test' })
-        .expect(404);
+      return await request(server).post('/users/password/reset').send({ email: 'fake@fake.test' }).expect(404);
     });
 
     it('send an email with the link for resetting password if the email is correct', async () => {
@@ -367,10 +348,7 @@ describe('UsersController (e2e)', () => {
       const { user } = await registerAndLogin();
       const { accessToken } = await registerAndLogin();
 
-      await request(server)
-        .delete(`/users/${user.id}`)
-        .set('Authorization', `Bearer ${accessToken}`)
-        .expect(401);
+      await request(server).delete(`/users/${user.id}`).set('Authorization', `Bearer ${accessToken}`).expect(401);
     });
 
     it('deletes a user', async () => {

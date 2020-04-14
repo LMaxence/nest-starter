@@ -1,18 +1,17 @@
 version: '3.7'
 
 services:
-
   mysql:
     image: mysql:8.0.17
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
-       MYSQL_DATABASE: '${MYSQL_DATABASE:-database}'
-       MYSQL_USER: '${APP_NAME:-starter}'
-       MYSQL_PASSWORD: '${MYSQL_PASSWORD:-password}'
-       MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD:-password}'
+      MYSQL_DATABASE: '${MYSQL_DATABASE:-database}'
+      MYSQL_USER: '${APP_NAME:-starter}'
+      MYSQL_PASSWORD: '${MYSQL_PASSWORD:-password}'
+      MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD:-password}'
     ports:
-      - "3306:3306"
+      - '3306:3306'
     volumes:
       - database_volume:/var/lib/${APP_NAME:-starter}/db
 
@@ -21,13 +20,13 @@ services:
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
-       MYSQL_DATABASE: '${MYSQL_DATABASE:-database}-test'
-       MYSQL_USER: '${APP_NAME:-starter}'
-       MYSQL_PASSWORD: '${MYSQL_PASSWORD:-password}'
-       MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD:-password}'
+      MYSQL_DATABASE: '${MYSQL_DATABASE:-database}-test'
+      MYSQL_USER: '${APP_NAME:-starter}'
+      MYSQL_PASSWORD: '${MYSQL_PASSWORD:-password}'
+      MYSQL_ROOT_PASSWORD: '${MYSQL_ROOT_PASSWORD:-password}'
 
     ports:
-      - "3307:3306"
+      - '3307:3306'
     volumes:
       - database_volume:/var/lib/${APP_NAME:-starter}/db
 

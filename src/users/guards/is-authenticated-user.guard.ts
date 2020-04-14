@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { AuthenticatedRequest } from 'src/auth/interfaces';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 

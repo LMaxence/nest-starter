@@ -1,10 +1,4 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  BeforeInsert,
-  Index,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, Index } from 'typeorm';
 import { SerializedUser } from './interfaces/serialized-user.interface';
 
 @Entity()
@@ -68,6 +62,6 @@ export class User {
   }
 
   static serializeCollection(entities: User[]): SerializedUser[] {
-    return entities.map(entity => entity.toRaw());
+    return entities.map((entity) => entity.toRaw());
   }
 }

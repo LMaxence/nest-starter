@@ -1,12 +1,7 @@
 import { Injectable, Inject, ImATeapotException } from '@nestjs/common';
 import { Repository, DeleteResult } from 'typeorm';
 import { User } from './user.entity';
-import {
-  USERS_REPOSITORY,
-  USERS_ENDPOINT,
-  USER_PASSWORD_RESET_EMAIL_SUBJECT,
-  USER_EMAIL_CONFIRM_EMAIL_SUBJECT,
-} from './user.constants';
+import { USERS_REPOSITORY, USERS_ENDPOINT, USER_PASSWORD_RESET_EMAIL_SUBJECT, USER_EMAIL_CONFIRM_EMAIL_SUBJECT } from './user.constants';
 import { CreateUserDTO } from './dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import { EmailService } from 'src/helpers/email/email.service';
@@ -22,7 +17,7 @@ export class UsersService {
     private configService: ConfigService,
     private cryptoService: CryptoService,
     private tokenService: TokenService,
-    private emailService: EmailService,
+    private emailService: EmailService
   ) {}
 
   /**
@@ -34,7 +29,7 @@ export class UsersService {
     const user = await this.usersRepository.save(
       this.usersRepository.create({
         ...userObject,
-      }),
+      })
     );
     await this.requestEmailConfirmation(user.id.toString(), user.email);
     return user;
@@ -82,19 +77,12 @@ export class UsersService {
     return await this.findByIdOrFail(id);
   }
 
-  async requestEmailConfirmation(
-    id: string,
-    emailCandidate: string,
-  ): Promise<void> {
+  async requestEmailConfirmation(id: string, emailCandidate: string): Promise<void> {
     const user = await this.findByIdOrFail(id);
     user.emailCandidate = emailCandidate;
     user.emailProofToken = this.tokenService.generateToken();
-    user.emailProofTokenExpiresAt = new Date(
-      Date.now() + this.tokenService.ttl,
-    );
-    const url = `${this.configService.get(
-      'BASE_URL',
-    )}/${USERS_ENDPOINT}/email/confirm?token=${user.emailProofToken}`;
+    user.emailProofTokenExpiresAt = new Date(Date.now() + this.tokenService.ttl);
+    const url = `${this.configService.get('BASE_URL')}/${USERS_ENDPOINT}/email/confirm?token=${user.emailProofToken}`;
     await this.usersRepository.save(user);
     this.emailService.sendMail(
       {
@@ -102,19 +90,15 @@ export class UsersService {
         subject: USER_EMAIL_CONFIRM_EMAIL_SUBJECT,
       },
       'confirm-email.ejs',
-      { url },
+      { url }
     );
   }
 
   async requestPasswordUpdate(email: string) {
     const user = await this.findByEmailOrFail(email);
     user.passwordResetToken = this.tokenService.generateToken();
-    user.passwordResetTokenExpiresAt = new Date(
-      Date.now() + this.tokenService.ttl,
-    );
-    const url = `${this.configService.get(
-      'BASE_URL',
-    )}/${USERS_ENDPOINT}/password/reset?token=${user.passwordResetToken}`;
+    user.passwordResetTokenExpiresAt = new Date(Date.now() + this.tokenService.ttl);
+    const url = `${this.configService.get('BASE_URL')}/${USERS_ENDPOINT}/password/reset?token=${user.passwordResetToken}`;
     await this.usersRepository.save(user);
     this.emailService.sendMail(
       {
@@ -122,7 +106,7 @@ export class UsersService {
         subject: USER_PASSWORD_RESET_EMAIL_SUBJECT,
       },
       'reset-password.ejs',
-      { url },
+      { url }
     );
   }
 
@@ -133,9 +117,7 @@ export class UsersService {
 
     if (user.emailProofTokenExpiresAt.getTime() < Date.now()) {
       await this.requestEmailConfirmation(user.id.toString(), user.email);
-      throw new ImATeapotException(
-        'Your token is expired, we sent you a new one',
-      );
+      throw new ImATeapotException('Your token is expired, we sent you a new one');
     }
     user.email = user.emailCandidate;
     user.isActive = true;
@@ -151,9 +133,7 @@ export class UsersService {
     });
     if (user.passwordResetTokenExpiresAt.getTime() < Date.now()) {
       await this.requestPasswordUpdate(user.email);
-      throw new ImATeapotException(
-        'Your token is expired, we sent you a new one',
-      );
+      throw new ImATeapotException('Your token is expired, we sent you a new one');
     }
     user.password = await this.cryptoService.hash(password);
     user.passwordResetToken = null;

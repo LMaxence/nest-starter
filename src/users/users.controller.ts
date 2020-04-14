@@ -15,13 +15,7 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import {
-  CreateUserDTO,
-  UpdateUserDTO,
-  UpdateEmailDTO,
-  RequestPasswordUpdateDTO,
-  UpdatePasswordDTO,
-} from './dto';
+import { CreateUserDTO, UpdateUserDTO, UpdateEmailDTO, RequestPasswordUpdateDTO, UpdatePasswordDTO } from './dto';
 import {
   USERS_ENDPOINT,
   USER_DELETION_SUCCESS_MESSAGE,
@@ -83,10 +77,7 @@ export class UsersController {
   @Post('/email/reset')
   @UseGuards(JwtAuthGuard)
   @HttpCode(200)
-  async requestEmailConfirmation(
-    @Request() request,
-    @Body() updateEmailDTO: UpdateEmailDTO
-  ) {
+  async requestEmailConfirmation(@Request() request, @Body() updateEmailDTO: UpdateEmailDTO) {
     const { newEmail } = updateEmailDTO;
     if (!(await this.usersService.getEmailAvailability(newEmail))) {
       throw new ConflictException(USER_ALREADY_EXISTS_MESSAGE);
@@ -105,9 +96,7 @@ export class UsersController {
   @Post('/password/reset')
   @UseFilters(NotFoundFilter)
   @HttpCode(200)
-  async requestPasswordUpdate(
-    @Body() requestPasswordUpdateDTO: RequestPasswordUpdateDTO
-  ) {
+  async requestPasswordUpdate(@Body() requestPasswordUpdateDTO: RequestPasswordUpdateDTO) {
     const { email } = requestPasswordUpdateDTO;
     await this.usersService.requestPasswordUpdate(email);
     return USER_PASSWORD_REQUEST_SENT_MESSAGE;

@@ -6,10 +6,10 @@ export class CryptoService {
   saltRounds = 10;
 
   async hash(password: string): Promise<string> {
-    return bcrypt.hash(password, this.saltRounds).then(hash => hash);
+    return bcrypt.hash(password, this.saltRounds).then((hash) => hash);
   }
 
   async compare(password: string, hash: string): Promise<boolean> {
-    return bcrypt.compare(password, hash).then(result => result);
+    return bcrypt.compare(password, hash).then((result) => result);
   }
 }

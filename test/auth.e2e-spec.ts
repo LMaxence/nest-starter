@@ -54,24 +54,18 @@ describe('AuthController (e2e) /auth', () => {
         .post('/auth/login')
         .send({ email, password })
         .expect(200)
-        .then(response => {
+        .then((response) => {
           const { access_token: accessToken } = response.body;
           expect(accessToken).toBeDefined();
         });
     });
 
     it('returns 401 when credentials are invalid', async () => {
-      return await request(server)
-        .post('/auth/login')
-        .send({ email, password: 'wrongPassword' })
-        .expect(401);
+      return await request(server).post('/auth/login').send({ email, password: 'wrongPassword' }).expect(401);
     });
 
     it('returns 404 when user is not found', async () => {
-      return await request(server)
-        .post('/auth/login')
-        .send({ email: 'fake_email@mail.com', password })
-        .expect(404);
+      return await request(server).post('/auth/login').send({ email: 'fake_email@mail.com', password }).expect(404);
     });
   });
 });
