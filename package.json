@@ -25,7 +25,7 @@
     "typeorm:migrate:generate": "npm run typeorm migration:generate -- -n",
     "typeorm:migrate:run": "npm run typeorm migration:run",
     "typeorm:migrate:revert": "npm run typeorm migration:revert",
-    "typeorm:migrate:run:test": "npm run typeorm:test migration:run -c test",
+    "typeorm:migrate:run:test": "npm run typeorm:test migration:run -- -c=test",
     "typeorm:fixtures:load": "./node_modules/.bin/fixtures ./fixtures --config ./ormconfig.ts --require=ts-node/register --require=tsconfig-paths/register"
   },
   "dependencies": {
