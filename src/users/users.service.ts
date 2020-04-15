@@ -1,9 +1,8 @@
 import { Injectable, Inject, ImATeapotException } from '@nestjs/common';
-import { Repository, DeleteResult } from 'typeorm';
+import { Repository, DeleteResult, DeepPartial } from 'typeorm';
 import { User } from './user.entity';
 import { USERS_REPOSITORY, USERS_ENDPOINT, USER_PASSWORD_RESET_EMAIL_SUBJECT, USER_EMAIL_CONFIRM_EMAIL_SUBJECT } from './user.constants';
 import { CreateUserDTO } from './dto';
-import { UpdateUserDTO } from './dto/update-user.dto';
 import { EmailService } from 'src/helpers/email/email.service';
 import { ConfigService } from 'src/config/config.service';
 import { TokenService } from 'src/helpers/token/token.service';
@@ -72,7 +71,7 @@ export class UsersService {
    *
    */
 
-  async update(id: string, updateObject: UpdateUserDTO): Promise<User> {
+  async update(id: string, updateObject: DeepPartial<User>): Promise<User> {
     await this.usersRepository.update(id, updateObject);
     return await this.findByIdOrFail(id);
   }
@@ -135,6 +134,14 @@ export class UsersService {
       await this.requestPasswordUpdate(user.email);
       throw new ImATeapotException('Your token is expired, we sent you a new one');
     }
+    user.password = await this.cryptoService.hash(password);
+    user.passwordResetToken = null;
+    user.passwordResetTokenExpiresAt = null;
+    await this.usersRepository.save(user);
+  }
+
+  async updatePasswordWithoutToken(id: string, password: string) {
+    const user = await this.usersRepository.findOneOrFail(id);
     user.password = await this.cryptoService.hash(password);
     user.passwordResetToken = null;
     user.passwordResetTokenExpiresAt = null;

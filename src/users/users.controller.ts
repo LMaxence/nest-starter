@@ -27,6 +27,7 @@ import {
   PASSWORD_DO_NOT_MATCH_MESSAGE,
   USER_PASSWORD_UPDATE_SUCCESS_MESSAGE,
   USER_ALREADY_EXISTS_MESSAGE,
+  PASSWORD_AND_CONFIRMATION_DO_NOT_MATCH_MESSAGE,
 } from './user.constants';
 import { NotFoundFilter } from 'src/helpers/filters/not-found.filter';
 import { User } from './user.entity';
@@ -73,7 +74,21 @@ export class UsersController {
   @UseFilters(NotFoundFilter)
   @UsePipes(new ValidationPipe())
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO) {
-    const user = await this.usersService.update(id, updateUserDto);
+    if (updateUserDto.password) {
+      const { password, passwordConfirmation } = updateUserDto;
+      console.log(password, passwordConfirmation);
+      if (password !== passwordConfirmation) {
+        throw new BadRequestException(PASSWORD_AND_CONFIRMATION_DO_NOT_MATCH_MESSAGE);
+      }
+      await this.usersService.updatePasswordWithoutToken(id, updateUserDto.password);
+    }
+
+    delete updateUserDto.password;
+    delete updateUserDto.passwordConfirmation;
+
+    const user = Object.keys(updateUserDto).length
+      ? await this.usersService.update(id, updateUserDto)
+      : await this.usersService.findByIdOrFail(id);
     return user.toRaw();
   }
 
