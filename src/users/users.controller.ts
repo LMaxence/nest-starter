@@ -13,6 +13,8 @@ import {
   UseGuards,
   Request,
   HttpCode,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDTO, UpdateUserDTO, UpdateEmailDTO, RequestPasswordUpdateDTO, UpdatePasswordDTO } from './dto';
@@ -69,6 +71,7 @@ export class UsersController {
   @Put(':id')
   @UseGuards(IsAuthenticatedUserGuard)
   @UseFilters(NotFoundFilter)
+  @UsePipes(new ValidationPipe())
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO) {
     const user = await this.usersService.update(id, updateUserDto);
     return user.toRaw();
@@ -77,7 +80,7 @@ export class UsersController {
   @Post('/email/reset')
   @UseGuards(JwtAuthGuard)
   @HttpCode(200)
-  async requestEmailConfirmation(@Request() request, @Body() updateEmailDTO: UpdateEmailDTO) {
+  async requestEmailConfirmation(@Body() updateEmailDTO: UpdateEmailDTO, @Request() request) {
     const { newEmail } = updateEmailDTO;
     if (!(await this.usersService.getEmailAvailability(newEmail))) {
       throw new ConflictException(USER_ALREADY_EXISTS_MESSAGE);
