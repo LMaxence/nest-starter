@@ -5,6 +5,8 @@ export class UpdateUserDTO {
   @IsBoolean()
   isActive: boolean;
 
+  //test
+
   @IsOptional()
   @IsString()
   password: string;
