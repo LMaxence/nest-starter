@@ -212,6 +212,29 @@ describe('UsersController (e2e)', () => {
         .expect(401);
     });
 
+    it('returns a 400 when password and confirmation do not match', async () => {
+      const { user, accessToken } = await registerAndLogin();
+      return await request(server)
+        .put(`/users/${user.id}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ password: faker.fake('{{internet.password}}'), passwordConfirmation: 'wrongConfirmation' })
+        .expect(400);
+    });
+
+    it('updates password when input is valid', async () => {
+      const { user, accessToken } = await registerAndLogin();
+      const newPassword = faker.fake('{{internet.password}}');
+      return await request(server)
+        .put(`/users/${user.id}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ password: newPassword, passwordConfirmation: newPassword })
+        .expect(200)
+        .then(async () => {
+          const updatedUser = await usersRepository.findOne(user.id);
+          expect(await cryptoService.compare(newPassword, updatedUser.password)).toBeTruthy();
+        });
+    });
+
     it('updates the user when user is authenticated', async () => {
       const { accessToken, user } = await registerAndLogin();
       expect(user.isActive).toBeTruthy();
