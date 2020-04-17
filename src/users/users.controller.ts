@@ -15,6 +15,8 @@ import {
   HttpCode,
   UsePipes,
   ValidationPipe,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDTO, UpdateUserDTO, UpdateEmailDTO, RequestPasswordUpdateDTO, UpdatePasswordDTO } from './dto';
@@ -34,13 +36,16 @@ import { User } from './user.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsAuthenticatedUserGuard } from './guards/is-authenticated-user.guard';
 import { AuthenticatedRequest } from 'src/auth/interfaces';
+import { UploadInterceptor } from 'src/upload/upload.interceptor';
 
 @Controller(USERS_ENDPOINT)
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Post('')
-  async create(@Body() createUserDto: CreateUserDTO) {
+  @UseInterceptors(UploadInterceptor('picture'))
+  async create(@Body() createUserDto: CreateUserDTO, @UploadedFile() picture) {
+    console.log(picture);
     if (!(await this.usersService.getEmailAvailability(createUserDto.email))) {
       throw new ConflictException(USER_ALREADY_EXISTS_MESSAGE);
     }
@@ -48,6 +53,7 @@ export class UsersController {
     return user.toRaw();
   }
 
+  //test
   @Get('')
   @UseGuards(JwtAuthGuard)
   async findAll() {
