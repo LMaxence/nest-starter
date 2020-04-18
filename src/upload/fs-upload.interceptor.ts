@@ -9,7 +9,6 @@ import { TokenService } from 'src/helpers/token/token.service';
 import { UploadOptions } from './interfaces';
 import { AbstractUploadInterceptor } from './abstract-upload.interceptor';
 
-
 export interface FsUploadInterceptorOptions extends UploadOptions {
   fieldName: string;
   maxCount?: number;
@@ -24,7 +23,7 @@ export function FsUploadInterceptor(
   storageOptions?: MulterOptions
 ): Type<NestInterceptor> {
   class FsUploadInterceptor extends AbstractUploadInterceptor<FsUploadInterceptorOptions> {
-    fieldName = fieldName
+    fieldName = fieldName;
     options = options;
     storageOptions = storageOptions;
     uploadService = new FsUploadService(configService, tokenService);

@@ -23,7 +23,11 @@ const emailServiceMock = {
 
 const createdUserIds: number[] = [];
 
-const login = async (server: HttpServer, email: string, password: string): Promise<string | undefined> => {
+const login = async (
+  server: HttpServer,
+  email: string,
+  password: string
+): Promise<string | undefined> => {
   return await request(server)
     .post('/auth/login')
     .send({
@@ -42,7 +46,11 @@ const addUser = async (repository: Repository<User>, data: DeepPartial<User>): P
   await repository.save(newUser);
 };
 
-const buildRegisterAndLogin = (server: HttpServer, usersRepository: Repository<User>, cryptoService: CryptoService) => async () => {
+const buildRegisterAndLogin = (
+  server: HttpServer,
+  usersRepository: Repository<User>,
+  cryptoService: CryptoService
+) => async () => {
   const userDetails = {
     email: faker.fake('{{internet.email}}'),
     password: faker.fake('{{internet.password}}'),
@@ -169,7 +177,7 @@ describe('UsersController (e2e)', () => {
     it('returns 404 when the requested user is not found', async () => {
       const { accessToken } = await registerAndLogin();
       return await request(server)
-        .get(`/users/fakeId`)
+        .get('/users/fakeId')
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(404);
     });
@@ -217,7 +225,10 @@ describe('UsersController (e2e)', () => {
       return await request(server)
         .put(`/users/${user.id}`)
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ password: faker.fake('{{internet.password}}'), passwordConfirmation: 'wrongConfirmation' })
+        .send({
+          password: faker.fake('{{internet.password}}'),
+          passwordConfirmation: 'wrongConfirmation',
+        })
         .expect(400);
     });
 
@@ -353,7 +364,11 @@ describe('UsersController (e2e)', () => {
       const newPassword = faker.fake('{{internet.password}}');
       return await request(server)
         .put('/users/password/reset')
-        .send({ token: 'fakeToken', password: newPassword, passwordConfirmation: newPassword })
+        .send({
+          token: 'fakeToken',
+          password: newPassword,
+          passwordConfirmation: newPassword,
+        })
         .expect(404);
     });
 

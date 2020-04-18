@@ -10,6 +10,7 @@ export const usersFixtures: User[] = [
   {
     id: 1,
     email: 'test2@test.com',
+    avatar: '',
     password: 'test',
     isActive: true,
   },

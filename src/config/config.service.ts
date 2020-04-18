@@ -22,6 +22,6 @@ export class ConfigService {
   getMulterConfig(): MulterOptions {
     return {
       dest: this.get('MULTER_DESTINATION_FOLDER')
-    }
+    };
   }
 }

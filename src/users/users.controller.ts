@@ -18,7 +18,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDTO, UpdateUserDTO, UpdateEmailDTO, RequestPasswordUpdateDTO, UpdatePasswordDTO } from './dto';
+import {
+  CreateUserDTO,
+  UpdateUserDTO,
+  UpdateEmailDTO,
+  RequestPasswordUpdateDTO,
+  UpdatePasswordDTO,
+} from './dto';
 import {
   USERS_ENDPOINT,
   USER_DELETION_SUCCESS_MESSAGE,
@@ -37,14 +43,16 @@ import { IsAuthenticatedUserGuard } from './guards/is-authenticated-user.guard';
 import { AuthenticatedRequest } from 'src/auth/interfaces';
 import { FsUploadInterceptor } from 'src/upload/fs-upload.interceptor';
 
-
 @Controller(USERS_ENDPOINT)
 export class UsersController {
-  constructor(private usersService: UsersService) { }
+  constructor(private usersService: UsersService) {}
 
   @Post('')
   @UseInterceptors(FsUploadInterceptor('picture'))
-  async create(@Body() createUserDto: CreateUserDTO) {
+  async create(@Body() createUserDto: CreateUserDTO, @Request() req) {
+    if (req.files.length) {
+      createUserDto.avatar = req.files[0].filename;
+    }
     if (!(await this.usersService.getEmailAvailability(createUserDto.email))) {
       throw new ConflictException(USER_ALREADY_EXISTS_MESSAGE);
     }
@@ -64,6 +72,14 @@ export class UsersController {
   async findOne(@Param('id') id: string) {
     const user = await this.usersService.findByIdOrFail(id);
     return user.toRaw();
+  }
+
+  @Get('/:id/avatar')
+  @UseGuards(JwtAuthGuard)
+  @UseFilters(NotFoundFilter)
+  async findAvatar(@Param('id') id: string) {
+    const user = await this.usersService.findByIdOrFail(id);
+    const avatar = user.avatar;
   }
 
   @Get('me/profile')

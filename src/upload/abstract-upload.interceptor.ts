@@ -1,5 +1,10 @@
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
-import { NestInterceptor, ExecutionContext, CallHandler, InternalServerErrorException } from '@nestjs/common';
+import {
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { AbstractUploadService } from './abstract-upload.service';
 import { Observable, throwError } from 'rxjs';
 import { UPLOAD_FAILURE_MESSAGE } from './upload.constants';
@@ -7,16 +12,17 @@ import { catchError } from 'rxjs/operators';
 import { UploadOptions } from './interfaces';
 
 export interface UploadInterceptorOptions extends UploadOptions {
-  fieldName: string
+  fieldName: string;
 }
 
-
-export abstract class AbstractUploadInterceptor<T extends UploadInterceptorOptions> implements NestInterceptor {
+// eslint-disable-next-line prettier/prettier
+export abstract class AbstractUploadInterceptor<T extends UploadInterceptorOptions>
+  implements NestInterceptor {
   fieldName: string;
-  options?: T
-  storageOptions?: MulterOptions
+  options?: T;
+  storageOptions?: MulterOptions;
   uploadService: AbstractUploadService<T>;
-  constructor() { }
+  constructor() {}
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
     const ctx = context.switchToHttp();
@@ -38,9 +44,10 @@ export abstract class AbstractUploadInterceptor<T extends UploadInterceptorOptio
     return next.handle().pipe(
       catchError(err => {
         const files = ctx.getRequest().files;
-        files && files.forEach(async (file: any) => {
-          await this.uploadService.delete(file.filename);
-        });
+        files &&
+          files.forEach(async (file: any) => {
+            await this.uploadService.delete(file.filename);
+          });
         return throwError(err);
       })
     );

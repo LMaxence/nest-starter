@@ -1,3 +1,4 @@
+/* eslint-disable unused-imports/no-unused-vars-ts */
 import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, Index } from 'typeorm';
 import { SerializedUser } from './interfaces/serialized-user.interface';
 
@@ -43,6 +44,9 @@ export class User {
   })
   isActive: boolean;
 
+  @Column()
+  avatar?: string;
+
   @BeforeInsert()
   beforeInsertActions() {
     this.isActive = false;
@@ -62,6 +66,6 @@ export class User {
   }
 
   static serializeCollection(entities: User[]): SerializedUser[] {
-    return entities.map((entity) => entity.toRaw());
+    return entities.map(entity => entity.toRaw());
   }
 }
