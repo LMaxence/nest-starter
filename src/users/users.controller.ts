@@ -15,7 +15,6 @@ import {
   HttpCode,
   UsePipes,
   ValidationPipe,
-  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -36,16 +35,16 @@ import { User } from './user.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsAuthenticatedUserGuard } from './guards/is-authenticated-user.guard';
 import { AuthenticatedRequest } from 'src/auth/interfaces';
-import { UploadInterceptor } from 'src/upload/upload.interceptor';
+import { FsUploadInterceptor } from 'src/upload/fs-upload.interceptor';
+
 
 @Controller(USERS_ENDPOINT)
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService) { }
 
   @Post('')
-  @UseInterceptors(UploadInterceptor('picture'))
-  async create(@Body() createUserDto: CreateUserDTO, @UploadedFile() picture) {
-    console.log(picture);
+  @UseInterceptors(FsUploadInterceptor('picture'))
+  async create(@Body() createUserDto: CreateUserDTO) {
     if (!(await this.usersService.getEmailAvailability(createUserDto.email))) {
       throw new ConflictException(USER_ALREADY_EXISTS_MESSAGE);
     }
@@ -53,7 +52,6 @@ export class UsersController {
     return user.toRaw();
   }
 
-  //test
   @Get('')
   @UseGuards(JwtAuthGuard)
   async findAll() {
@@ -82,7 +80,6 @@ export class UsersController {
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO) {
     if (updateUserDto.password) {
       const { password, passwordConfirmation } = updateUserDto;
-      console.log(password, passwordConfirmation);
       if (password !== passwordConfirmation) {
         throw new BadRequestException(PASSWORD_AND_CONFIRMATION_DO_NOT_MATCH_MESSAGE);
       }
