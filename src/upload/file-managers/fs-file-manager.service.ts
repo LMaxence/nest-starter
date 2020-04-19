@@ -18,6 +18,10 @@ export class FsFileManagerService extends AbstractFileManagerService {
     });
   }
 
+  resolveName(file: Express.Multer.File): string {
+    return file.filename;
+  }
+
   serveFile(res: Response, fileName: string) {
     res.sendFile(fileName, { root: this.root });
   }

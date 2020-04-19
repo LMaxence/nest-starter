@@ -4,11 +4,12 @@ import { ConfigModule } from 'src/config/config.module';
 import { HelpersModule } from 'src/helpers/helpers.module';
 import { FileService } from './upload-manager.service';
 import { StorageService } from './storage/storage.service';
-import { MsFileManagerService } from './file-managers/ms-file-manager.service';
+
+import { S3FileManagerService } from './file-managers/s3-file-manager.service';
 
 @Module({
   imports: [ConfigModule, HelpersModule],
-  providers: [FsFileManagerService, StorageService, FileService, MsFileManagerService],
+  providers: [FsFileManagerService, StorageService, FileService, S3FileManagerService],
   exports: [FileService, StorageService],
 })
 export class UploadModule {}

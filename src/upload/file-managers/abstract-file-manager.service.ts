@@ -12,5 +12,6 @@ export abstract class AbstractFileManagerService {
   }
 
   abstract delete(fileName: string): Promise<void>;
+  abstract resolveName(file: Express.Multer.File): string;
   abstract serveFile(res: Response, fileName: string): void;
 }

@@ -56,7 +56,7 @@ export class UsersController {
   @UseInterceptors(FileInterceptor({ name: 'picture' }))
   async create(@Body() createUserDto: CreateUserDTO, @Request() req) {
     if (req.files && req.files.length) {
-      createUserDto.avatar = req.files[0].filename;
+      createUserDto.avatar = this.fileService.resolveName(req.files[0]);
     }
     if (!(await this.usersService.getEmailAvailability(createUserDto.email))) {
       throw new ConflictException(USER_ALREADY_EXISTS_MESSAGE);
