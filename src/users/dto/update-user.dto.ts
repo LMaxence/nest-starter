@@ -5,11 +5,13 @@ export class UpdateUserDTO {
   @IsBoolean()
   isActive: boolean;
 
-  //test
-
   @IsOptional()
   @IsString()
   password: string;
+
+  @IsOptional()
+  @IsString()
+  avatar: string;
 
   @IsOptional()
   @ValidateIf(o => o.password)

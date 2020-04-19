@@ -6,8 +6,6 @@ import { DatabaseModule } from './database/database.module';
 import { HelpersModule } from './helpers/helpers.module';
 import { UploadModule } from './upload/upload.module';
 
-const test = 'test';
-
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -16,8 +14,6 @@ const test = 'test';
     AuthModule,
     UsersModule,
     UploadModule,
-    StaticRange,
-    StereoPannerNode,
   ],
 })
 export class AppModule {}
