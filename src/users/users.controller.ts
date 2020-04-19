@@ -45,15 +45,15 @@ import { User } from './user.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsAuthenticatedUserGuard } from './guards/is-authenticated-user.guard';
 import { AuthenticatedRequest } from 'src/auth/interfaces';
-import { FsUploadInterceptor } from 'src/upload/fs-upload.interceptor';
-import { UploadManagerService } from 'src/upload/upload-manager.service';
+import { FileInterceptor } from 'src/upload/interceptors/file.interceptor';
+import { FileService } from 'src/upload/upload-manager.service';
 
 @Controller(USERS_ENDPOINT)
 export class UsersController {
-  constructor(private usersService: UsersService, private uploadManager: UploadManagerService) {}
+  constructor(private usersService: UsersService, private fileService: FileService) {}
 
   @Post('')
-  @UseInterceptors(FsUploadInterceptor('picture'))
+  @UseInterceptors(FileInterceptor({ name: 'picture' }))
   async create(@Body() createUserDto: CreateUserDTO, @Request() req) {
     if (req.files.length) {
       createUserDto.avatar = req.files[0].filename;
@@ -86,7 +86,7 @@ export class UsersController {
     const user = await this.usersService.findByIdOrFail(id);
     const avatar = user.avatar;
     if (avatar) {
-      return this.uploadManager.addFile(res, avatar);
+      return this.fileService.serveFile(res, avatar);
     }
     throw new NotFoundException(USER_HAS_NO_AVATAR_MESSAGE);
   }
@@ -102,7 +102,7 @@ export class UsersController {
   @UseGuards(IsAuthenticatedUserGuard)
   @UseFilters(NotFoundFilter)
   @UsePipes(new ValidationPipe())
-  @UseInterceptors(FsUploadInterceptor('picture'))
+  @UseInterceptors(FileInterceptor({ name: 'picture' }))
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO, @Request() req) {
     if (updateUserDto.password) {
       const { password, passwordConfirmation } = updateUserDto;
@@ -115,7 +115,7 @@ export class UsersController {
     let user = await this.usersService.findByIdOrFail(id);
 
     if (req.files.length) {
-      this.uploadManager.delete(user.avatar);
+      this.fileService.delete(user.avatar);
       updateUserDto.avatar = req.files[0].filename;
     }
 
@@ -172,7 +172,7 @@ export class UsersController {
   async delete(@Param('id') id: string) {
     const user = await this.usersService.findByIdOrFail(id);
     if (user.avatar) {
-      this.uploadManager.delete(user.avatar);
+      this.fileService.delete(user.avatar);
     }
     await this.usersService.delete(id);
     return USER_DELETION_SUCCESS_MESSAGE;
@@ -183,7 +183,7 @@ export class UsersController {
   async deleteAvatar(@Param('id') id: string) {
     const user = await this.usersService.findByIdOrFail(id);
     if (user.avatar) {
-      this.uploadManager.delete(user.avatar);
+      this.fileService.delete(user.avatar);
     }
     user.avatar = null;
     await this.usersService.delete(id);

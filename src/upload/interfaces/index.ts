@@ -1,1 +1,1 @@
-export * from './upload-options.interface';
+export * from './storage-options.interface';

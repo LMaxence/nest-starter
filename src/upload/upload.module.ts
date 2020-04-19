@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { FsUploadService } from './fs-upload.service';
+import { FsFileManagerService } from './fs-file-manager.service';
 import { ConfigModule } from 'src/config/config.module';
 import { HelpersModule } from 'src/helpers/helpers.module';
-import { UploadManagerService } from './upload-manager.service';
+import { FileService } from './upload-manager.service';
+import { StorageService } from './storage/storage.service';
 
 @Module({
   imports: [ConfigModule, HelpersModule],
-  providers: [FsUploadService, UploadManagerService],
-  exports: [FsUploadService, UploadManagerService],
+  providers: [FsFileManagerService, StorageService, FileService],
+  exports: [FileService, StorageService],
 })
 export class UploadModule {}
