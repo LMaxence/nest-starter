@@ -24,8 +24,14 @@ export class EmailService implements OnModuleInit {
     }
   }
 
-  async sendMail(emailOptions: SendMailOptions, templateName: string, data: any): Promise<SentMessageInfo> {
-    emailOptions.html = await ejs.renderFile(path.join(this.TEMPLATES_PATH, templateName), { data });
+  async sendMail(
+    emailOptions: SendMailOptions,
+    templateName: string,
+    data: any
+  ): Promise<SentMessageInfo> {
+    emailOptions.html = await ejs.renderFile(path.join(this.TEMPLATES_PATH, templateName), {
+      data,
+    });
     // Never send mails in test environment
     return this.transporter && (await this.transporter.sendMail(emailOptions));
   }

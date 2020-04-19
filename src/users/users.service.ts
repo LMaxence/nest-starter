@@ -1,7 +1,12 @@
 import { Injectable, Inject, ImATeapotException } from '@nestjs/common';
 import { Repository, DeleteResult, DeepPartial } from 'typeorm';
 import { User } from './user.entity';
-import { USERS_REPOSITORY, USERS_ENDPOINT, USER_PASSWORD_RESET_EMAIL_SUBJECT, USER_EMAIL_CONFIRM_EMAIL_SUBJECT } from './user.constants';
+import {
+  USERS_REPOSITORY,
+  USERS_ENDPOINT,
+  USER_PASSWORD_RESET_EMAIL_SUBJECT,
+  USER_EMAIL_CONFIRM_EMAIL_SUBJECT,
+} from './user.constants';
 import { CreateUserDTO } from './dto';
 import { EmailService } from 'src/helpers/email/email.service';
 import { ConfigService } from 'src/config/config.service';
@@ -81,7 +86,9 @@ export class UsersService {
     user.emailCandidate = emailCandidate;
     user.emailProofToken = this.tokenService.generateToken();
     user.emailProofTokenExpiresAt = new Date(Date.now() + this.tokenService.ttl);
-    const url = `${this.configService.get('BASE_URL')}/${USERS_ENDPOINT}/email/confirm?token=${user.emailProofToken}`;
+    const url = `${this.configService.get('BASE_URL')}/${USERS_ENDPOINT}/email/confirm?token=${
+      user.emailProofToken
+    }`;
     await this.usersRepository.save(user);
     this.emailService.sendMail(
       {
@@ -97,7 +104,9 @@ export class UsersService {
     const user = await this.findByEmailOrFail(email);
     user.passwordResetToken = this.tokenService.generateToken();
     user.passwordResetTokenExpiresAt = new Date(Date.now() + this.tokenService.ttl);
-    const url = `${this.configService.get('BASE_URL')}/${USERS_ENDPOINT}/password/reset?token=${user.passwordResetToken}`;
+    const url = `${this.configService.get('BASE_URL')}/${USERS_ENDPOINT}/password/reset?token=${
+      user.passwordResetToken
+    }`;
     await this.usersRepository.save(user);
     this.emailService.sendMail(
       {

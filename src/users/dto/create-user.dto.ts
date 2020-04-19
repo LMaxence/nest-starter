@@ -8,5 +8,7 @@ export class CreateUserDTO {
   @IsNotEmpty()
   password: string;
 
+  avatar: string;
+
   isActive: boolean;
 }

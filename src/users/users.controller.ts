@@ -15,9 +15,18 @@ import {
   HttpCode,
   UsePipes,
   ValidationPipe,
+  UseInterceptors,
+  Response,
+  NotFoundException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDTO, UpdateUserDTO, UpdateEmailDTO, RequestPasswordUpdateDTO, UpdatePasswordDTO } from './dto';
+import {
+  CreateUserDTO,
+  UpdateUserDTO,
+  UpdateEmailDTO,
+  RequestPasswordUpdateDTO,
+  UpdatePasswordDTO,
+} from './dto';
 import {
   USERS_ENDPOINT,
   USER_DELETION_SUCCESS_MESSAGE,
@@ -28,19 +37,27 @@ import {
   USER_PASSWORD_UPDATE_SUCCESS_MESSAGE,
   USER_ALREADY_EXISTS_MESSAGE,
   PASSWORD_AND_CONFIRMATION_DO_NOT_MATCH_MESSAGE,
+  USER_HAS_NO_AVATAR_MESSAGE,
+  USER_AVATAR_DELETION_SUCCESS_MESSAGE,
 } from './user.constants';
 import { NotFoundFilter } from 'src/helpers/filters/not-found.filter';
 import { User } from './user.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsAuthenticatedUserGuard } from './guards/is-authenticated-user.guard';
 import { AuthenticatedRequest } from 'src/auth/interfaces';
+import { FileInterceptor } from 'src/upload/interceptors/file.interceptor';
+import { FileService } from 'src/upload/upload-manager.service';
 
 @Controller(USERS_ENDPOINT)
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService, private fileService: FileService) {}
 
   @Post('')
-  async create(@Body() createUserDto: CreateUserDTO) {
+  @UseInterceptors(FileInterceptor({ name: 'picture' }))
+  async create(@Body() createUserDto: CreateUserDTO, @Request() req) {
+    if (req.files && req.files.length) {
+      createUserDto.avatar = this.fileService.resolveName(req.files[0]);
+    }
     if (!(await this.usersService.getEmailAvailability(createUserDto.email))) {
       throw new ConflictException(USER_ALREADY_EXISTS_MESSAGE);
     }
@@ -62,6 +79,18 @@ export class UsersController {
     return user.toRaw();
   }
 
+  @Get('/:id/avatar')
+  @UseGuards(JwtAuthGuard)
+  @UseFilters(NotFoundFilter)
+  async findAvatar(@Param('id') id: string, @Response() res) {
+    const user = await this.usersService.findByIdOrFail(id);
+    const avatar = user.avatar;
+    if (avatar) {
+      return this.fileService.serveFile(res, avatar);
+    }
+    throw new NotFoundException(USER_HAS_NO_AVATAR_MESSAGE);
+  }
+
   @Get('me/profile')
   @UseGuards(JwtAuthGuard)
   @UseFilters(NotFoundFilter)
@@ -73,20 +102,27 @@ export class UsersController {
   @UseGuards(IsAuthenticatedUserGuard)
   @UseFilters(NotFoundFilter)
   @UsePipes(new ValidationPipe())
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO) {
+  @UseInterceptors(FileInterceptor({ name: 'picture' }))
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO, @Request() req) {
     if (updateUserDto.password) {
       const { password, passwordConfirmation } = updateUserDto;
-      console.log(password, passwordConfirmation);
       if (password !== passwordConfirmation) {
         throw new BadRequestException(PASSWORD_AND_CONFIRMATION_DO_NOT_MATCH_MESSAGE);
       }
       await this.usersService.updatePasswordWithoutToken(id, updateUserDto.password);
     }
 
+    let user = await this.usersService.findByIdOrFail(id);
+
+    if (req.files && req.files.length) {
+      this.fileService.delete(user.avatar);
+      updateUserDto.avatar = req.files[0].filename;
+    }
+
     delete updateUserDto.password;
     delete updateUserDto.passwordConfirmation;
 
-    const user = Object.keys(updateUserDto).length
+    user = Object.keys(updateUserDto).length
       ? await this.usersService.update(id, updateUserDto)
       : await this.usersService.findByIdOrFail(id);
     return user.toRaw();
@@ -134,7 +170,23 @@ export class UsersController {
   @Delete(':id')
   @UseGuards(IsAuthenticatedUserGuard)
   async delete(@Param('id') id: string) {
+    const user = await this.usersService.findByIdOrFail(id);
+    if (user.avatar) {
+      this.fileService.delete(user.avatar);
+    }
     await this.usersService.delete(id);
     return USER_DELETION_SUCCESS_MESSAGE;
+  }
+
+  @Delete(':id/avatar')
+  @UseGuards(IsAuthenticatedUserGuard)
+  async deleteAvatar(@Param('id') id: string) {
+    const user = await this.usersService.findByIdOrFail(id);
+    if (user.avatar) {
+      this.fileService.delete(user.avatar);
+    }
+    user.avatar = null;
+    await this.usersService.delete(id);
+    return USER_AVATAR_DELETION_SUCCESS_MESSAGE;
   }
 }

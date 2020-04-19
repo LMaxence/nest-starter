@@ -17,7 +17,7 @@ class MockRepository {
   }
   async findOne({ where }) {
     return Promise.resolve(
-      usersFixtures.find((user) => {
+      usersFixtures.find(user => {
         return where.id ? user.id.toString() === where.id : user.email === where.email;
       })
     );
@@ -85,7 +85,7 @@ describe('UsersService', () => {
   describe('findById', () => {
     it('finds users by id', async () => {
       const user = await usersService.findById('1');
-      expect(user.id).toBe(usersFixtures.find((user) => user.id === 1).id);
+      expect(user.id).toBe(usersFixtures.find(user => user.id === 1).id);
     });
 
     it('returns undefined when user is not found', async () => {
@@ -98,7 +98,7 @@ describe('UsersService', () => {
     it('finds users by email', async () => {
       const emailAddress = usersFixtures[0].email;
       const user = await usersService.findByEmail(emailAddress);
-      expect(user.id).toBe(usersFixtures.find((user) => user.email === emailAddress).id);
+      expect(user.id).toBe(usersFixtures.find(user => user.email === emailAddress).id);
     });
 
     it('returns undefined when user is not found', async () => {
@@ -117,7 +117,7 @@ describe('UsersService', () => {
       let emailCandidate;
       let emailProofToken;
       let emailProofTokenExpiresAt;
-      jest.spyOn(usersRepository, 'save').mockImplementation((data) => {
+      jest.spyOn(usersRepository, 'save').mockImplementation(data => {
         emailCandidate = data.emailCandidate;
         emailProofToken = data.emailProofToken;
         emailProofTokenExpiresAt = data.emailProofTokenExpiresAt;
@@ -141,7 +141,7 @@ describe('UsersService', () => {
   describe('requestPasswordUpdate', () => {
     const user = usersFixtures[0];
     it('sends an email for resetting password', async () => {
-      jest.spyOn(usersRepository, 'save').mockImplementation((data) => {
+      jest.spyOn(usersRepository, 'save').mockImplementation(data => {
         expect(data.passwordResetToken).toBe(tokenService.generateToken());
         expect(data.passwordResetTokenExpiresAt).not.toBe(undefined);
         return Promise.resolve(user);
@@ -171,7 +171,7 @@ describe('UsersService', () => {
         jest.spyOn(usersRepository, 'findOneOrFail').mockImplementation(() => {
           return Promise.resolve(user);
         });
-        jest.spyOn(usersRepository, 'save').mockImplementation((data) => {
+        jest.spyOn(usersRepository, 'save').mockImplementation(data => {
           expect(data.emailCandidate).toBe(null);
           expect(data.emailProofToken).toBe(null);
           expect(data.emailProofTokenExpiresAt).toBe(null);
@@ -221,7 +221,7 @@ describe('UsersService', () => {
         jest.spyOn(usersRepository, 'findOneOrFail').mockImplementation(() => {
           return Promise.resolve(user);
         });
-        jest.spyOn(usersRepository, 'save').mockImplementation((data) => {
+        jest.spyOn(usersRepository, 'save').mockImplementation(data => {
           expect(data.password).not.toBe(oldPasswordHashed);
           expect(data.passwordResetTokenExpiresAt).toBe(null);
           expect(data.passwordResetToken).toBe(null);
