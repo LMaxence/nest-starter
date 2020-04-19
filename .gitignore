@@ -40,3 +40,5 @@ config/*
 
 # Uploads
 uploads
+test/temp/*
+!test/temp/avatar.jpg

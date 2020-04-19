@@ -27,11 +27,9 @@ export class StorageService {
     switch (this.storageType) {
       case FILE_MANAGERS.fs:
         return multer.diskStorage({ destination, filename });
-      case FILE_MANAGERS.ms:
-        return multer.memoryStorage();
       default:
-        console.warn('No FILE_MANAGER env variable found -> defaults to MemoryStorage');
-        return multer.memoryStorage();
+        console.warn('No FILE_MANAGER env variable found -> defaults to FileStorage');
+        return multer.diskStorage({ destination, filename });
     }
   }
 }

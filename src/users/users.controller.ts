@@ -55,7 +55,7 @@ export class UsersController {
   @Post('')
   @UseInterceptors(FileInterceptor({ name: 'picture' }))
   async create(@Body() createUserDto: CreateUserDTO, @Request() req) {
-    if (req.files.length) {
+    if (req.files && req.files.length) {
       createUserDto.avatar = req.files[0].filename;
     }
     if (!(await this.usersService.getEmailAvailability(createUserDto.email))) {
@@ -114,7 +114,7 @@ export class UsersController {
 
     let user = await this.usersService.findByIdOrFail(id);
 
-    if (req.files.length) {
+    if (req.files && req.files.length) {
       this.fileService.delete(user.avatar);
       updateUserDto.avatar = req.files[0].filename;
     }
