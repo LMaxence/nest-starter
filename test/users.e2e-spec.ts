@@ -99,7 +99,7 @@ describe('UsersController (e2e)', () => {
     connection.close();
   });
 
-  describe('POST /users', () => {
+  describe.only('POST /users', () => {
     it('creates a new user when provided data is valid', async () => {
       const email = faker.fake('{{internet.email}}');
       const password = faker.fake('{{internet.password}}');
@@ -119,7 +119,7 @@ describe('UsersController (e2e)', () => {
         });
     });
 
-    it('returns 409 when email is already taken', async () => {
+    it.only('returns 409 when email is already taken', async () => {
       const { user } = await registerAndLogin();
       const mailSpy = jest.spyOn(emailService, 'sendMail');
       return request(server)
