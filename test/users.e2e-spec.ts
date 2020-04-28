@@ -170,7 +170,6 @@ describe('UsersController (e2e)', () => {
         .expect(200)
         .then(response => {
           const returnedUser = response.body;
-          console.log(returnedUser);
           expect(returnedUser.id).toBe(user.id);
           expect(returnedUser.password).toBeUndefined();
         });

@@ -20,13 +20,12 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json --runInBand",
     "test:e2e:watch": "jest --watchAll --config ./test/jest-e2e.json -i",
-    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config ormconfig.json",
-    "typeorm:test": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config ormconfig.json",
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config ormconfig.ts",
+    "typeorm:test": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config ormconfig.ts",
     "typeorm:migrate:generate": "npm run typeorm migration:generate -- -n",
     "typeorm:migrate:run": "npm run typeorm migration:run",
     "typeorm:migrate:revert": "npm run typeorm migration:revert",
-    "typeorm:migrate:run:test": "npm run typeorm:test migration:run -- -c=test",
-    "typeorm:fixtures:load": "./node_modules/.bin/fixtures ./fixtures --config ./ormconfig.ts --require=ts-node/register --require=tsconfig-paths/register"
+    "typeorm:migrate:run:test": "npm run typeorm:test migration:run -- -c=test"
   },
   "dependencies": {
     "@nestjs/common": "^7.0.0",
