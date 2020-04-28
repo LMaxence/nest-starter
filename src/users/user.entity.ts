@@ -1,6 +1,7 @@
 /* eslint-disable unused-imports/no-unused-vars-ts */
 import { Entity, Column, PrimaryGeneratedColumn, BeforeInsert, Index } from 'typeorm';
-import { SerializedUser } from './interfaces/serialized-user.interface';
+
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User {
@@ -11,29 +12,35 @@ export class User {
   @Column('varchar')
   email: string;
 
+  @Exclude()
   @Column('varchar', {
     nullable: true,
   })
   emailCandidate?: string;
 
+  @Exclude()
   @Column('varchar', {
     nullable: true,
   })
   emailProofToken?: string;
 
+  @Exclude()
   @Column('datetime', {
     nullable: true,
   })
   emailProofTokenExpiresAt?: Date;
 
+  @Exclude()
   @Column('varchar')
   password: string;
 
+  @Exclude()
   @Column('varchar', {
     nullable: true,
   })
   passwordResetToken?: string;
 
+  @Exclude()
   @Column('datetime', {
     nullable: true,
   })
@@ -50,22 +57,5 @@ export class User {
   @BeforeInsert()
   beforeInsertActions() {
     this.isActive = false;
-  }
-
-  toRaw(): SerializedUser {
-    const {
-      password,
-      emailProofToken,
-      emailProofTokenExpiresAt,
-      passwordResetToken,
-      passwordResetTokenExpiresAt,
-      emailCandidate,
-      ...serializedUser
-    } = this;
-    return serializedUser;
-  }
-
-  static serializeCollection(entities: User[]): SerializedUser[] {
-    return entities.map(entity => entity.toRaw());
   }
 }
