@@ -1,0 +1,57 @@
+name: deploy
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+
+  test_and_build:
+
+    runs-on: ubuntu-latest
+
+    # services:
+    #   mysql:
+    #     image: mysql:5.7
+    #     env:
+    #       MYSQL_DATABASE: 'marketplaces-db-test'
+    #       MYSQL_USER: 'marketplaces'
+    #       MYSQL_PASSWORD: 'password'
+    #       MYSQL_ROOT_PASSWORD: 'password'
+    #     ports:
+    #     - '3307:3306'
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+        
+    # - name: Install dependencies
+    #   run: npm ci
+
+    # - name: Run unit tests
+    #   run: npm test
+    #   env:
+    #     CI: true
+
+    # - name: Run database migrations
+    #   run: npm run typeorm:migrate:run:test
+
+    # - name: Run e2e testing
+    #   run: npm run test:e2e
+    #   env:
+    #     CI: true
+
+    # - name: Build application
+    #   run: npm run build
+
+    - name: Deploy
+      run : |
+        mkdir ~/.ssh
+        echo "${{ secrets.KEY }}" > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
+        ssh-keyscan github.com >> ~/.ssh/known_hosts
+        ssh-keyscan git.eu.s5y.io >> ~/.ssh/known_hosts
+        ssh -i ~/.ssh/deploy_key maxence@mlecanu.fr "cd marketplaces && git pull && npm run build && pm2 restart marketplaces"
