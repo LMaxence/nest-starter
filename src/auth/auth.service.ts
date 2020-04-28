@@ -14,7 +14,7 @@ export class AuthService {
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findByEmailOrFail(email);
     if (await this.cryptoService.compare(password, user.password)) {
-      return user.toRaw();
+      return user;
     }
     return null;
   }

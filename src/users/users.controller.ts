@@ -18,6 +18,7 @@ import {
   UseInterceptors,
   Response,
   NotFoundException,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -41,7 +42,7 @@ import {
   USER_AVATAR_DELETION_SUCCESS_MESSAGE,
 } from './user.constants';
 import { NotFoundFilter } from 'src/helpers/filters/not-found.filter';
-import { User } from './user.entity';
+
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsAuthenticatedUserGuard } from './guards/is-authenticated-user.guard';
 import { AuthenticatedRequest } from 'src/auth/interfaces';
@@ -54,6 +55,7 @@ export class UsersController {
 
   @Post('')
   @UseInterceptors(FileInterceptor({ name: 'picture' }))
+  @UseInterceptors(ClassSerializerInterceptor)
   async create(@Body() createUserDto: CreateUserDTO, @Request() req) {
     if (req.files && req.files.length) {
       createUserDto.avatar = this.fileService.resolveName(req.files[0]);
@@ -62,21 +64,23 @@ export class UsersController {
       throw new ConflictException(USER_ALREADY_EXISTS_MESSAGE);
     }
     const user = await this.usersService.create(createUserDto);
-    return user.toRaw();
+    return user;
   }
 
   @Get('')
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   async findAll() {
-    return User.serializeCollection(await this.usersService.findAll());
+    return await this.usersService.findAll();
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(ClassSerializerInterceptor)
   @UseFilters(NotFoundFilter)
   async findOne(@Param('id') id: string) {
     const user = await this.usersService.findByIdOrFail(id);
-    return user.toRaw();
+    return user;
   }
 
   @Get('/:id/avatar')
@@ -94,8 +98,9 @@ export class UsersController {
   @Get('me/profile')
   @UseGuards(JwtAuthGuard)
   @UseFilters(NotFoundFilter)
+  @UseInterceptors(ClassSerializerInterceptor)
   async getProfile(@Request() req: AuthenticatedRequest) {
-    return req.user.toRaw();
+    return req.user;
   }
 
   @Put(':id')
@@ -103,6 +108,7 @@ export class UsersController {
   @UseFilters(NotFoundFilter)
   @UsePipes(new ValidationPipe())
   @UseInterceptors(FileInterceptor({ name: 'picture' }))
+  @UseInterceptors(ClassSerializerInterceptor)
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO, @Request() req) {
     if (updateUserDto.password) {
       const { password, passwordConfirmation } = updateUserDto;
@@ -125,7 +131,7 @@ export class UsersController {
     user = Object.keys(updateUserDto).length
       ? await this.usersService.update(id, updateUserDto)
       : await this.usersService.findByIdOrFail(id);
-    return user.toRaw();
+    return user;
   }
 
   @Post('/email/reset')
