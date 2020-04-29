@@ -6,20 +6,9 @@ on:
 
 jobs:
 
-  test_and_build:
+  unit_tests:
 
     runs-on: ubuntu-latest
-
-    # services:
-    #   mysql:
-    #     image: mysql:5.7
-    #     env:
-    #       MYSQL_DATABASE: 'marketplaces-db-test'
-    #       MYSQL_USER: 'marketplaces'
-    #       MYSQL_PASSWORD: 'password'
-    #       MYSQL_ROOT_PASSWORD: 'password'
-    #     ports:
-    #     - '3307:3306'
 
     steps:
     - uses: actions/checkout@v2
@@ -28,30 +17,73 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         
-    # - name: Install dependencies
-    #   run: npm ci
+    - name: Install dependencies
+      run: npm ci
 
-    # - name: Run unit tests
-    #   run: npm test
-    #   env:
-    #     CI: true
+    - name: Run unit tests
+      run: npm test
+      env:
+        CI: true
 
-    # - name: Run database migrations
-    #   run: npm run typeorm:migrate:run:test
+  e2e_tests:
 
-    # - name: Run e2e testing
-    #   run: npm run test:e2e
-    #   env:
-    #     CI: true
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: 'marketplaces-db-test'
+          MYSQL_USER: 'marketplaces'
+          MYSQL_PASSWORD: 'password'
+          MYSQL_ROOT_PASSWORD: 'password'
+        ports:
+        - '3307:3306'
 
-    # - name: Build application
-    #   run: npm run build
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+        
+    - name: Install dependencies
+      run: npm ci
 
+    - name: Run database migrations
+      run: npm run typeorm:migrate:run:test
+
+    - name: Run e2e testing
+      run: npm run test:e2e
+      env:
+        CI: true
+
+  build:
+
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+        
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build application
+      run: npm run build
+
+  deploy:
+
+    runs-on: ubuntu-latest
+    needs: [unit_tests, e2e_tests, build]
+    steps:
+    - uses: actions/checkout@v2
     - name: Deploy
       run : |
         mkdir ~/.ssh
-        echo "${{ secrets.KEY }}" > ~/.ssh/deploy_key
+        echo "${{ secrets.SERVER_PRIVATE_KEY }}" > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
-        ssh-keyscan github.com >> ~/.ssh/known_hosts
-        ssh-keyscan git.eu.s5y.io >> ~/.ssh/known_hosts
-        ssh -i ~/.ssh/deploy_key maxence@mlecanu.fr "cd marketplaces && git pull && npm run build && pm2 restart marketplaces"
+        echo $(ssh-keyscan -t rsa ${{ secrets.SERVER_HOST }})  > ~/.ssh/known_hosts
+        ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USERNAME }}@${{ secrets.SERVER_HOST }} "source ~/.nvm/nvm.sh && nvm use node && cd ${{ secrets.APP_FOLDER }} && git pull && npm run build && pm2 restart ${{ secrets.PM2_PROCESS_NAME }}"
