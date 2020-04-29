@@ -53,6 +53,11 @@ import { FileService } from 'src/upload/upload-manager.service';
 export class UsersController {
   constructor(private usersService: UsersService, private fileService: FileService) {}
 
+  @Get('hello')
+  async hello() {
+    return 'hello';
+  }
+
   @Post('')
   @UseInterceptors(FileInterceptor({ name: 'picture' }))
   @UseInterceptors(ClassSerializerInterceptor)
