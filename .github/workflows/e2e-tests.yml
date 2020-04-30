@@ -16,8 +16,8 @@ jobs:
       mysql:
         image: mysql:5.7
         env:
-          MYSQL_DATABASE: 'marketplaces-db-test'
-          MYSQL_USER: 'marketplaces'
+          MYSQL_DATABASE: 'db-test'
+          MYSQL_USER: 'test'
           MYSQL_PASSWORD: 'password'
           MYSQL_ROOT_PASSWORD: 'password'
         ports:
