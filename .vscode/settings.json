@@ -1,0 +1,17 @@
+{
+  "eslint.alwaysShowStatus": true,
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true
+  },
+  "jest.autoRun": "off",
+  "jest.jestCommandLine": "./node_modules/dotenv-cli/cli.js -e .env-overrides/.env.test-overrides -e .env ./node_modules/jest/bin/jest.js ./test",
+  "spellright.language": ["en"],
+  "spellright.documentTypes": ["markdown", "latex"],
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  }
+}
